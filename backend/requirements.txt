@@ -1,0 +1,11 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.8
+pydantic-settings>=2.4
+google-genai>=1.50
+qdrant-client>=1.12
+pymupdf>=1.25
+tenacity>=9.0
+cachetools>=5.5
+python-multipart>=0.0.9
+httpx>=0.27

@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+data/qdrant/
+data/cache/
+data/processed/
+data/books.json
+data/raw/*
+!data/raw/.gitkeep
+frontend/.streamlit/secrets.toml

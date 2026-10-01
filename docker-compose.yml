@@ -1,0 +1,30 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    volumes: ["qdrant_data:/qdrant/storage"]
+    ports: ["6333:6333"]
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      ENVIRONMENT: prod
+      LOG_JSON: "true"
+      WEB_CONCURRENCY: "2"
+    volumes: ["./data:/srv/data"]
+    ports: ["8000:8000"]
+    depends_on: [qdrant]
+    restart: unless-stopped
+
+  ui:
+    build: ./frontend
+    environment:
+      BACKEND_URL: http://api:8000
+    ports: ["8501:8501"]
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:

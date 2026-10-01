@@ -1,0 +1,19 @@
+[server]
+headless = true
+runOnSave = false
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#B4410C"
+backgroundColor = "#FFFBF5"
+secondaryBackgroundColor = "#FBEFDF"
+textColor = "#2B1D12"
+borderColor = "#EBD9C3"
+linkColor = "#9A3412"
+baseRadius = "medium"
+
+[theme.sidebar]
+backgroundColor = "#FBEFDF"
