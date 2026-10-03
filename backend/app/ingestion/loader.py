@@ -60,6 +60,11 @@ async def load_document(
         raw = path.read_text(encoding="utf-8")
         parts = raw.split("\f") if "\f" in raw else [raw]
         return [Page(i + 1, normalize(p), False) for i, p in enumerate(parts) if p.strip()]
+    if suffix == ".docx":
+        from .docx_loader import load_docx
+
+        pages = await asyncio.to_thread(load_docx, path)
+        return [Page(n, text, False) for n, text in pages if text.strip()]
     if suffix != ".pdf":
         raise ValueError(f"Unsupported file type: {suffix}")
     return await _load_pdf(path, doc_id, gemini, settings, progress)

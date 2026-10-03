@@ -117,8 +117,8 @@ async def ingest(
     st = _state(request)
     s = st.settings
     name = _SAFE_NAME.sub("_", Path(file.filename or "upload").name)
-    if Path(name).suffix.lower() not in {".pdf", ".txt", ".md"}:
-        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Only PDF, TXT and MD are supported")
+    if Path(name).suffix.lower() not in {".pdf", ".docx", ".txt", ".md"}:
+        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Only PDF, DOCX, TXT and MD are supported")
 
     s.uploads_dir.mkdir(parents=True, exist_ok=True)
     dest = s.uploads_dir / name

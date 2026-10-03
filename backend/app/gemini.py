@@ -30,10 +30,10 @@ def _is_transient(exc: BaseException) -> bool:
     return isinstance(exc, (asyncio.TimeoutError, ConnectionError))
 
 
-def _retrying(attempts: int = 5) -> AsyncRetrying:
+def _retrying(attempts: int = 5, max_wait: float = 30) -> AsyncRetrying:
     return AsyncRetrying(
         retry=retry_if_exception(_is_transient),
-        wait=wait_exponential_jitter(initial=1, max=30),
+        wait=wait_exponential_jitter(initial=min(1, max_wait), max=max_wait),
         stop=stop_after_attempt(attempts),
         reraise=True,
     )
@@ -128,13 +128,36 @@ class GeminiClient:
             max_output_tokens=self.s.max_output_tokens,
             thinking_config=_thinking(self.s.generation_thinking_level),
         )
-        stream = None
-        async for attempt in _retrying(3):  # retries only before the first token
-            with attempt:
-                stream = await self.aio.models.generate_content_stream(
-                    model=self.s.generation_model, contents=contents, config=cfg
+        async def open_stream(model: str):
+            async for attempt in _retrying(2, max_wait=2):
+                with attempt:
+                    stream = await self.aio.models.generate_content_stream(
+                        model=model, contents=contents, config=cfg
+                    )
+                    return stream, await anext(stream, None)
+
+        # Interactive path: fail over to the next model when one is overloaded (503/429)
+        # or too slow to start answering. Only possible before the first token is sent.
+        models = [self.s.generation_model, *self.s.generation_fallback_models]
+        for i, model in enumerate(models):
+            last = i == len(models) - 1
+            try:
+                stream, first = await asyncio.wait_for(
+                    open_stream(model), None if last else self.s.first_token_timeout_s
                 )
-        assert stream is not None
+                break
+            except Exception as exc:
+                if last or not _is_transient(exc):
+                    raise
+                reason = "no first token in %.0fs" % self.s.first_token_timeout_s if isinstance(
+                    exc, asyncio.TimeoutError
+                ) else str(exc)[:120]
+                log.warning("%s unavailable (%s); falling back to %s", model, reason, models[i + 1])
+        if model != self.s.generation_model:
+            log.info("answer served by fallback model %s", model)
+
+        if first is not None and first.text:
+            yield first.text
         async for chunk in stream:
             if chunk.text:
                 yield chunk.text

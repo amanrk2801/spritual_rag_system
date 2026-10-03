@@ -29,6 +29,7 @@ Ask questions in **Hindi, English or Hinglish** and get answers grounded in your
 | Contextual embeddings | Each chunk is embedded as `"<book> \| <chapter>\n<text>"`, so a passage that never names its subject still matches. |
 | Retrieval | Hybrid: `gemini-embedding-001` (768-d, cross-lingual) **+** BM25 sparse vectors (Qdrant applies IDF server-side). Multi-query (original + Hindi rewrites), fused with **RRF in a single Qdrant call**. |
 | Indexing | Qdrant HNSW (`m=32`) + int8 scalar quantisation kept in RAM, with originals on disk: search time is O(log N), and memory stays low as the library grows to millions of chunks. Payload indexes on `doc_id` / `category` / `language` speed up filtered search. |
+| Model overload | If `gemini-3.8-flash` returns 503/429 or hasn't started answering within 5 s, the answer automatically fails over to `GENERATION_FALLBACK_MODELS` (`gemini-3.6-flash`, then `gemini-3.5-flash`). |
 | Latency | Fast path skips the rewrite for self-contained Hindi questions. The raw-question embedding runs in parallel with the rewrite. LRU query-embedding cache, TTL answer cache (cache hit ≈ 3 ms), streaming tokens. |
 | Accuracy / safety | Answers come only from retrieved passages with `[n]` citations. The model admits when the sources lack an answer, doesn't invent shlokas, and treats passages as data (prompt-injection guard). It replies in the user's language and script. |
 | Ops | Typed config (`.env`), structured/JSON logs with request IDs, `/health` + `/ready`, retries with jittered backoff for Gemini, rate limiting, optional API keys, admin ingest jobs, Docker + Compose. |
@@ -64,7 +65,9 @@ streamlit run streamlit_app.py
 
 ## Adding more books (Vedas, Upanishads, Puranas…)
 
-- Supported formats: PDF (text or scanned) and UTF-8 `.txt` / `.md` (use `## Heading` lines for chapters).
+- Supported formats: PDF (text or scanned), Word `.docx`, and UTF-8 `.txt` / `.md` (use `## Heading` lines for chapters).
+  For `.docx`, page numbers come from the page breaks Word saved, and chapter titles are detected from
+  Heading styles or short ALL-CAPS lines ("CHAPTER III" + "PRANA" → `CHAPTER III — PRANA`).
 - Ingestion is **idempotent**: `doc_id` is the file's SHA-256 hash, so re-running skips a book that's already indexed; `--force` re-indexes it.
 - Use `category` (`veda`, `upanishad`, `purana`, `gita`, `ramayana`, …) and `language` (`hi`, `sa`, `en`) consistently. The UI can limit search to selected books.
 - For scanned or garbled books, OCR runs automatically (`OCR_MODE=auto`). Use `always` or `never` to override.

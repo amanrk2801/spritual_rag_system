@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     # ---- Gemini ----
     gemini_api_key: SecretStr
     generation_model: str = "gemini-3.8-flash"
+    # Tried in order when the primary model is overloaded (503) or rate-limited (429).
+    generation_fallback_models: list[str] = ["gemini-3.6-flash", "gemini-3.5-flash"]
+    first_token_timeout_s: float = 5.0  # switch to the next model if it hasn't started answering
     rewrite_model: str = "gemini-3.5-flash-lite"
     ocr_model: str = "gemini-3.8-flash"
     embedding_model: str = "gemini-embedding-001"

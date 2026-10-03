@@ -16,11 +16,12 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
 API_KEY = os.getenv("PUBLIC_API_KEY")
 HEADERS = {"X-API-Key": API_KEY} if API_KEY else {}
 
+# Library-agnostic starter questions: they stay relevant as more scriptures are added.
 SUGGESTIONS = {
-    ":orange[:material/water:] रामसेतु का भेद": "रामसेतु का भेद क्या है? पत्थर कैसे तैरे?",
-    ":orange[:material/auto_stories:] 33 करोड़ सुरों का रहस्य": "33 करोड़ सुरों का रहस्य क्या है?",
-    ":orange[:material/self_improvement:] Krishna & Sudama": "What is the secret of the Krishna–Sudama leela?",
-    ":orange[:material/forest:] Baba Matang": "Baba Matang kaun hain aur unhone kya seekha?",
+    ":orange[:material/self_improvement:] मन को शांत कैसे करें": "मन को शांत और एकाग्र कैसे करें?",
+    ":orange[:material/spa:] What is meditation?": "What is meditation and how should one practise it?",
+    ":orange[:material/all_inclusive:] Karma aur moksha": "Karma aur moksha ka kya sambandh hai?",
+    ":orange[:material/favorite:] भक्ति का महत्व": "ईश्वर की भक्ति का क्या महत्व है?",
 }
 
 st.set_page_config(page_title="Dharma Sahayak", page_icon=":material/temple_hindu:", layout="centered")
