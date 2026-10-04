@@ -6,6 +6,8 @@ Ask questions in **Hindi, English or Hinglish** and get answers grounded in your
 - **Backend:** FastAPI (async, SSE streaming), Gemini, Qdrant hybrid search
 - **Frontend:** Streamlit chat UI
 
+For the full design, history and runbook, see [ENGINEERING_NOTES.md](ENGINEERING_NOTES.md).
+
 ## Architecture
 
 ```
